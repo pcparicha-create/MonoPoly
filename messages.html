@@ -1,0 +1,1993 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>KAKA Admin - Messages</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            color: #222;
+        }
+
+        /* HEADER */
+
+        header {
+            background: #111827;
+            color: white;
+            padding: 18px 25px;
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            border: none;
+            border-radius: 7px;
+            padding: 10px 14px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: background 0.2s;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .back-btn {
+            background: #374151;
+            color: white;
+        }
+
+        .back-btn:hover {
+            background: #4b5563;
+        }
+
+        .logout-btn {
+            background: #dc2626;
+            color: white;
+        }
+
+        .logout-btn:hover {
+            background: #b91c1c;
+        }
+
+        /* MAIN PAGE */
+
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px 50px;
+        }
+
+        .page-title {
+            margin-bottom: 25px;
+        }
+
+        .page-title h2 {
+            margin: 0 0 8px;
+            font-size: 28px;
+        }
+
+        .page-title p {
+            margin: 0;
+            color: #6b7280;
+        }
+
+        #messageStatus {
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .success-message {
+            color: #15803d;
+        }
+
+        .error-message {
+            color: #dc2626;
+        }
+
+        .loading,
+        .empty,
+        .error-box {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .error-box {
+            color: #b91c1c;
+        }
+
+        /* MESSAGE LIST LAYOUT */
+
+        #messagesContainer {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            gap: 16px;
+        }
+
+        /* NORMAL MESSAGE CARD */
+
+        .message-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            width: 100%;
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+
+            transition:
+                width 0.2s ease,
+                height 0.2s ease,
+                padding 0.2s ease;
+        }
+
+        .message-card-left {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .message-card-top {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .message-card-top h3 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .customer-email {
+            color: #6b7280;
+            font-size: 13px;
+            margin-bottom: 12px;
+            overflow-wrap: anywhere;
+        }
+
+        .message-preview {
+            font-size: 14px;
+            color: #374151;
+            line-height: 1.5;
+
+            overflow-wrap: anywhere;
+            white-space: pre-wrap;
+        }
+
+        .message-card-meta {
+            font-size: 12px;
+            color: #9ca3af;
+            margin-top: 12px;
+        }
+
+        .message-card-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .open-btn {
+            background: #1877f2;
+            color: white;
+        }
+
+        .open-btn:hover {
+            background: #0866ff;
+        }
+
+        .hide-btn {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .hide-btn:hover {
+            background: #d1d5db;
+        }
+
+        .delete-btn {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .delete-btn:hover {
+            background: #fecaca;
+        }
+
+        /* STATUS LABELS */
+
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .status-new {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .status-read {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-replied {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        /* =================================
+           MINIMISED MESSAGE CARD
+           EXACT SIZE: 200 x 100 PX
+        ================================= */
+
+        .message-card.is-hidden {
+            width: 200px;
+            height: 100px;
+            min-height: 100px;
+
+            padding: 8px;
+            margin: 0;
+
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            justify-content: space-between;
+            gap: 4px;
+
+            overflow: hidden;
+            border-radius: 9px;
+
+            flex: 0 0 200px;
+        }
+
+        .message-card.is-hidden .message-card-left {
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .message-card.is-hidden .message-card-top {
+            display: flex;
+            align-items: center;
+            flex-wrap: nowrap;
+            gap: 5px;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .message-card.is-hidden .message-card-top h3 {
+            font-size: 12px;
+            font-weight: bold;
+
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+
+            min-width: 0;
+        }
+
+        .message-card.is-hidden .status {
+            font-size: 8px;
+            padding: 3px 5px;
+            flex-shrink: 0;
+        }
+
+        .message-card.is-hidden .customer-email,
+        .message-card.is-hidden .message-preview,
+        .message-card.is-hidden .message-card-meta {
+            display: none;
+        }
+
+        .message-card.is-hidden .message-card-actions {
+            display: flex;
+            width: 100%;
+            justify-content: space-between;
+            align-items: center;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
+        .message-card.is-hidden .message-card-actions button {
+            flex: 1;
+            min-width: 0;
+            padding: 6px 2px;
+            font-size: 10px;
+            white-space: nowrap;
+        }
+
+        /* =================================
+           500 x 500 CHAT WINDOW
+        ================================= */
+
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+
+            background: rgba(0, 0, 0, 0.35);
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            z-index: 1000;
+            padding: 15px;
+        }
+
+        .modal-backdrop.hidden {
+            display: none;
+        }
+
+        .message-modal {
+            width: 500px;
+            height: 500px;
+
+            max-width: 100%;
+            max-height: 100%;
+
+            background: white;
+            border-radius: 12px;
+
+            overflow: hidden;
+
+            display: flex;
+            flex-direction: column;
+
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+        }
+
+        /* CHAT HEADER */
+
+        .chat-header {
+            background: #1877f2;
+            color: white;
+
+            padding: 12px 15px;
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+
+            flex-shrink: 0;
+        }
+
+        .chat-header-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .chat-header-name {
+            font-size: 16px;
+            font-weight: bold;
+
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .chat-header-email {
+            font-size: 11px;
+            margin-top: 4px;
+            opacity: 0.9;
+
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .chat-header-actions {
+            display: flex;
+            gap: 5px;
+            flex-shrink: 0;
+        }
+
+        .chat-header-btn {
+            width: 32px;
+            height: 32px;
+
+            padding: 0;
+
+            color: white;
+            background: rgba(255, 255, 255, 0.18);
+
+            font-size: 21px;
+            line-height: 1;
+        }
+
+        .chat-header-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* CHAT CONTENT */
+
+        .chat-content {
+            flex: 1;
+            min-height: 0;
+
+            overflow-y: auto;
+
+            padding: 15px;
+            background: #f9fafb;
+        }
+
+        .product-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .detail-box {
+            padding: 10px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            min-width: 0;
+        }
+
+        .detail-label {
+            display: block;
+            color: #6b7280;
+            font-size: 10px;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .detail-value {
+            font-size: 13px;
+            font-weight: bold;
+            overflow-wrap: anywhere;
+        }
+
+        .chat-date {
+            text-align: center;
+            color: #9ca3af;
+            font-size: 11px;
+            margin: 12px 0;
+        }
+
+        .chat-bubble-label {
+            font-size: 11px;
+            color: #6b7280;
+            margin-bottom: 5px;
+        }
+
+        .customer-message-bubble {
+            display: inline-block;
+            max-width: 95%;
+
+            background: white;
+            border: 1px solid #e5e7eb;
+
+            border-radius: 5px 14px 14px 14px;
+            padding: 11px 13px;
+
+            font-size: 13px;
+            line-height: 1.6;
+
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+
+        .customer-message-block {
+            margin-bottom: 16px;
+        }
+
+        .admin-reply-block {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            margin-bottom: 15px;
+        }
+
+        .admin-reply-bubble {
+            display: inline-block;
+            max-width: 95%;
+
+            background: #1877f2;
+            color: white;
+
+            border-radius: 14px 5px 14px 14px;
+            padding: 11px 13px;
+
+            font-size: 13px;
+            line-height: 1.6;
+
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+
+        .reply-date {
+            font-size: 10px;
+            color: #9ca3af;
+            margin-top: 5px;
+        }
+
+        .chat-status-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+
+            border-top: 1px solid #e5e7eb;
+            padding-top: 12px;
+            margin-top: 15px;
+        }
+
+        .chat-status-text {
+            color: #6b7280;
+            font-size: 12px;
+        }
+
+        .mark-read-btn {
+            background: #e5e7eb;
+            color: #374151;
+            padding: 7px 9px;
+            font-size: 11px;
+        }
+
+        .mark-read-btn:hover {
+            background: #d1d5db;
+        }
+
+        /* REPLY AREA */
+
+        .chat-reply-area {
+            background: white;
+            border-top: 1px solid #e5e7eb;
+
+            padding: 10px 12px;
+
+            flex-shrink: 0;
+        }
+
+        .reply-input {
+            width: 100%;
+            height: 55px;
+            resize: none;
+
+            padding: 10px;
+
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+
+            font-family: Arial, sans-serif;
+            font-size: 13px;
+
+            outline: none;
+        }
+
+        .reply-input:focus {
+            border-color: #1877f2;
+        }
+
+        .reply-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .reply-hint {
+            font-size: 10px;
+            color: #9ca3af;
+        }
+
+        .send-reply-btn {
+            background: #1877f2;
+            color: white;
+            font-weight: bold;
+        }
+
+        .send-reply-btn:hover {
+            background: #0866ff;
+        }
+
+        .chat-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            background: white;
+            padding: 0 12px 9px;
+
+            flex-shrink: 0;
+        }
+
+        .chat-delete-btn {
+            background: transparent;
+            color: #dc2626;
+            padding: 5px 0;
+            font-size: 11px;
+        }
+
+        .chat-delete-btn:hover {
+            text-decoration: underline;
+        }
+
+        /* RESPONSIVE */
+
+        @media (max-width: 600px) {
+            header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .header-buttons button {
+                flex: 1;
+            }
+
+            .container {
+                padding: 0 12px 30px;
+            }
+
+            .message-card:not(.is-hidden) {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .message-card:not(.is-hidden) .message-card-actions {
+                justify-content: flex-end;
+            }
+
+            .message-modal {
+                width: 500px;
+                height: 500px;
+                max-width: 100%;
+                max-height: calc(100dvh - 30px);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>KAKA Admin - Messages</h1>
+
+    <div class="header-buttons">
+        <button type="button" class="back-btn" id="backButton">
+            Back to Admin
+        </button>
+
+        <button type="button" class="logout-btn" id="logoutButton">
+            Logout
+        </button>
+    </div>
+</header>
+
+
+<main class="container">
+
+    <div class="page-title">
+        <h2>Customer Messages</h2>
+
+        <p>
+            Open customer messages, minimise individual cards,
+            or reply to customers.
+        </p>
+    </div>
+
+    <div id="messageStatus" role="status" aria-live="polite"></div>
+
+    <div id="messagesContainer">
+        <div class="loading">Loading messages...</div>
+    </div>
+
+</main>
+
+
+<!-- CHAT MODAL -->
+
+<div
+    class="modal-backdrop hidden"
+    id="chatBackdrop"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Customer message"
+>
+    <section class="message-modal">
+
+        <div class="chat-header">
+
+            <div class="chat-header-info">
+                <div class="chat-header-name" id="chatCustomerName">
+                    Customer
+                </div>
+
+                <div class="chat-header-email" id="chatCustomerEmail">
+                    Customer email
+                </div>
+            </div>
+
+            <div class="chat-header-actions">
+
+                <button
+                    type="button"
+                    class="chat-header-btn"
+                    id="minimiseChatButton"
+                    title="Close the chat window"
+                    aria-label="Minimise chat window"
+                >
+                    −
+                </button>
+
+                <button
+                    type="button"
+                    class="chat-header-btn"
+                    id="closeChatButton"
+                    title="Close chat"
+                    aria-label="Close chat"
+                >
+                    ×
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <div class="chat-content" id="chatContent">
+        </div>
+
+
+        <div class="chat-reply-area">
+
+            <textarea
+                id="replyInput"
+                class="reply-input"
+                placeholder="Write a reply..."
+                aria-label="Write a reply"
+            ></textarea>
+
+            <div class="reply-actions">
+
+                <span class="reply-hint">
+                    Enter to send · Shift+Enter for a new line
+                </span>
+
+                <button
+                    type="button"
+                    class="send-reply-btn"
+                    id="sendReplyButton"
+                >
+                    Send Reply
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <div class="chat-footer">
+
+            <span></span>
+
+            <button
+                type="button"
+                class="chat-delete-btn"
+                id="deleteFromChatButton"
+            >
+                Delete Message
+            </button>
+
+        </div>
+
+    </section>
+</div>
+
+
+<script>
+"use strict";
+
+/* =====================================
+   SUPABASE CONFIGURATION
+===================================== */
+
+const SUPABASE_URL =
+    "https://oikdlfdviruwwukwosmn.supabase.co";
+
+const SUPABASE_KEY =
+    "sb_publishable_bMEfqkt2eZPBiNDXY8gbEA_okVZKsLU";
+
+const ADMIN_STORAGE_KEY =
+    "kaka_admin_auth";
+
+const supabaseClient = supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY,
+    {
+        auth: {
+            storageKey: ADMIN_STORAGE_KEY,
+            persistSession: true,
+            autoRefreshToken: true,
+            detectSessionInUrl: true
+        }
+    }
+);
+
+
+/* =====================================
+   VARIABLES
+===================================== */
+
+let currentAdmin = null;
+
+let allMessages = [];
+
+let allReplies = [];
+
+let activeMessageId = null;
+
+/*
+    Stores the IDs of cards that have been
+    minimised on the messages page.
+
+    This does not change anything in Supabase.
+*/
+
+const collapsedMessageCards = new Set();
+
+/*
+    Stores unsent reply text while switching
+    between different messages.
+*/
+
+const replyDrafts = new Map();
+
+
+/* =====================================
+   ADMIN LOGIN CHECK
+===================================== */
+
+async function checkAdminLogin() {
+
+    try {
+
+        const {
+            data,
+            error
+        } = await supabaseClient.auth.getSession();
+
+        if (error) {
+            throw error;
+        }
+
+        if (!data.session) {
+
+            window.location.replace("admin-login.html");
+
+            return false;
+        }
+
+        currentAdmin = data.session.user;
+
+        const {
+            data: adminUser,
+            error: adminError
+        } = await supabaseClient
+            .from("admin_users")
+            .select("id, email")
+            .eq("id", currentAdmin.id)
+            .maybeSingle();
+
+        if (adminError) {
+            throw adminError;
+        }
+
+        if (!adminUser) {
+
+            await supabaseClient.auth.signOut({
+                scope: "local"
+            });
+
+            window.location.replace("admin-login.html");
+
+            return false;
+        }
+
+        return true;
+
+    } catch (error) {
+
+        console.error("Admin login check failed:", error);
+
+        window.location.replace("admin-login.html");
+
+        return false;
+    }
+}
+
+
+/* =====================================
+   STATUS MESSAGE
+===================================== */
+
+function showStatus(message, type = "success") {
+
+    const element =
+        document.getElementById("messageStatus");
+
+    element.textContent = message;
+
+    element.className =
+        type === "error"
+            ? "error-message"
+            : "success-message";
+
+    clearTimeout(showStatus.timeout);
+
+    if (message) {
+
+        showStatus.timeout = setTimeout(() => {
+            element.textContent = "";
+            element.className = "";
+        }, 4000);
+
+    }
+}
+
+
+/* =====================================
+   LOAD MESSAGES AND REPLIES
+===================================== */
+
+async function loadMessages() {
+
+    const container =
+        document.getElementById("messagesContainer");
+
+    container.innerHTML = `
+        <div class="loading">Loading messages...</div>
+    `;
+
+    try {
+
+        const {
+            data: messages,
+            error: messagesError
+        } = await supabaseClient
+            .from("messages")
+            .select("*")
+            .order("created_at", {
+                ascending: false
+            });
+
+        if (messagesError) {
+            throw messagesError;
+        }
+
+        const {
+            data: replies,
+            error: repliesError
+        } = await supabaseClient
+            .from("message_replies")
+            .select("*")
+            .order("created_at", {
+                ascending: true
+            });
+
+        if (repliesError) {
+            throw repliesError;
+        }
+
+        allMessages = messages || [];
+
+        allReplies = replies || [];
+
+        const existingIds = new Set(
+            allMessages.map(message => String(message.id))
+        );
+
+        /*
+            Make all messages start off in mini/minimised size
+        */
+        if (collapsedMessageCards.size === 0) {
+            allMessages.forEach(message => {
+                collapsedMessageCards.add(String(message.id));
+            });
+        }
+
+        /*
+            Clear card minimisation state for messages
+            that no longer exist in the database.
+        */
+
+        for (const id of collapsedMessageCards) {
+
+            if (!existingIds.has(id)) {
+                collapsedMessageCards.delete(id);
+            }
+
+        }
+
+        for (const id of replyDrafts.keys()) {
+
+            if (!existingIds.has(id)) {
+                replyDrafts.delete(id);
+            }
+
+        }
+
+        /*
+            Close the chat if its message was deleted.
+        */
+
+        if (
+            activeMessageId !== null &&
+            !existingIds.has(String(activeMessageId))
+        ) {
+            activeMessageId = null;
+            hideChatModal();
+        }
+
+        renderMessageList();
+
+        if (activeMessageId !== null) {
+            renderActiveChat();
+        }
+
+    } catch (error) {
+
+        console.error("Loading messages failed:", error);
+
+        container.innerHTML = `
+            <div class="error-box">
+                Could not load messages.
+                <br><br>
+                ${escapeHtml(error.message || "Unknown error")}
+                <br><br>
+                <button type="button" class="open-btn" id="retryButton">
+                    Try Again
+                </button>
+            </div>
+        `;
+
+        document
+            .getElementById("retryButton")
+            ?.addEventListener("click", loadMessages);
+    }
+}
+
+
+/* =====================================
+   RENDER MESSAGE CARDS
+===================================== */
+
+function renderMessageList() {
+
+    const container =
+        document.getElementById("messagesContainer");
+
+    if (!allMessages.length) {
+
+        container.innerHTML = `
+            <div class="empty" style="width:100%">
+                No customer messages yet.
+            </div>
+        `;
+
+        return;
+    }
+
+    container.innerHTML = allMessages.map(message => {
+
+        const id = String(message.id);
+
+        const isHidden = collapsedMessageCards.has(id);
+
+        const status = message.status || "New";
+
+        const statusClass = getStatusClass(status);
+
+        const customerName =
+            message.customer_name || "Customer";
+
+        const customerEmail =
+            message.customer_email || "No email";
+
+        const messageText =
+            message.message || "";
+
+        const messageDate =
+            formatDate(message.created_at);
+
+        return `
+            <article
+                class="message-card ${isHidden ? "is-hidden" : ""}"
+                data-card-id="${escapeHtml(id)}"
+            >
+
+                <div class="message-card-left">
+
+                    <div class="message-card-top">
+
+                        <h3>
+                            ${escapeHtml(customerName)}
+                        </h3>
+
+                        <span class="status ${statusClass}">
+                            ${escapeHtml(status)}
+                        </span>
+
+                    </div>
+
+                    <div class="customer-email">
+                        ${escapeHtml(customerEmail)}
+                    </div>
+
+                    <div class="message-preview">
+                        ${escapeHtml(messageText)}
+                    </div>
+
+                    <div class="message-card-meta">
+                        ${escapeHtml(messageDate)}
+                    </div>
+
+                </div>
+
+                <div class="message-card-actions">
+
+                    <button
+                        type="button"
+                        class="open-btn"
+                        data-action="open"
+                        data-message-id="${escapeHtml(id)}"
+                    >
+                        Open
+                    </button>
+
+                    <button
+                        type="button"
+                        class="hide-btn"
+                        data-action="${isHidden ? "show-card" : "hide-card"}"
+                        data-message-id="${escapeHtml(id)}"
+                    >
+                        ${isHidden ? "Show" : "Hide"}
+                    </button>
+
+                    <button
+                        type="button"
+                        class="delete-btn"
+                        data-action="delete"
+                        data-message-id="${escapeHtml(id)}"
+                    >
+                        Delete
+                    </button>
+
+                </div>
+
+            </article>
+        `;
+
+    }).join("");
+}
+
+
+/* =====================================
+   FIND MESSAGE AND REPLIES
+===================================== */
+
+function getMessage(messageId) {
+
+    return allMessages.find(
+        message => String(message.id) === String(messageId)
+    );
+}
+
+
+function getReplies(messageId) {
+
+    return allReplies.filter(
+        reply => String(reply.message_id) === String(messageId)
+    );
+}
+
+
+/* =====================================
+   HIDE / SHOW MESSAGE CARD
+===================================== */
+
+function hideMessageCard(messageId) {
+
+    const id = String(messageId);
+
+    collapsedMessageCards.add(id);
+
+    renderMessageList();
+}
+
+
+function showMessageCard(messageId) {
+
+    const id = String(messageId);
+
+    collapsedMessageCards.delete(id);
+
+    renderMessageList();
+}
+
+
+/* =====================================
+   OPEN CHAT WINDOW
+===================================== */
+
+function openChat(messageId) {
+
+    const id = String(messageId);
+
+    const message = getMessage(id);
+
+    if (!message) {
+
+        showStatus(
+            "Could not find this message.",
+            "error"
+        );
+
+        return;
+    }
+
+    /*
+        Preserve the current unsent reply before
+        switching to another message.
+    */
+
+    saveCurrentDraft();
+
+    activeMessageId = id;
+
+    const backdrop =
+        document.getElementById("chatBackdrop");
+
+    backdrop.classList.remove("hidden");
+
+    renderActiveChat();
+
+    setTimeout(() => {
+
+        document.getElementById("replyInput")?.focus();
+
+    }, 50);
+}
+
+
+/* =====================================
+   RENDER ACTIVE CHAT
+===================================== */
+
+function renderActiveChat() {
+
+    if (activeMessageId === null) {
+        return;
+    }
+
+    const message = getMessage(activeMessageId);
+
+    if (!message) {
+        hideChatModal();
+        return;
+    }
+
+    const replies = getReplies(activeMessageId);
+
+    document.getElementById("chatCustomerName").textContent =
+        message.customer_name || "Customer";
+
+    document.getElementById("chatCustomerEmail").textContent =
+        message.customer_email || "No email";
+
+    const repliesHtml = replies.map(reply => {
+
+        return `
+            <div class="admin-reply-block">
+
+                <div class="chat-bubble-label">
+                    Admin Reply
+                </div>
+
+                <div class="admin-reply-bubble">
+                    ${escapeHtml(reply.reply || "")}
+                </div>
+
+                <div class="reply-date">
+                    ${escapeHtml(formatDate(reply.created_at))}
+                </div>
+
+            </div>
+        `;
+
+    }).join("");
+
+    const status = message.status || "New";
+
+    const showMarkRead =
+        status.toLowerCase() !== "read" &&
+        status.toLowerCase() !== "replied";
+
+    document.getElementById("chatContent").innerHTML = `
+
+        <div class="product-details">
+
+            <div class="detail-box">
+
+                <span class="detail-label">
+                    Product
+                </span>
+
+                <span class="detail-value">
+                    ${escapeHtml(message.product_name || "Unknown product")}
+                </span>
+
+            </div>
+
+            <div class="detail-box">
+
+                <span class="detail-label">
+                    Selected Size
+                </span>
+
+                <span class="detail-value">
+                    ${escapeHtml(message.selected_size || "Not selected")}
+                </span>
+
+            </div>
+
+        </div>
+
+        <div class="chat-date">
+            Customer message · ${escapeHtml(formatDate(message.created_at))}
+        </div>
+
+        <div class="customer-message-block">
+
+            <div class="chat-bubble-label">
+                ${escapeHtml(message.customer_name || "Customer")}
+            </div>
+
+            <div class="customer-message-bubble">
+                ${escapeHtml(message.message || "")}
+            </div>
+
+        </div>
+
+        ${repliesHtml}
+
+        <div class="chat-status-row">
+
+            <span class="chat-status-text">
+                Status: ${escapeHtml(status)}
+            </span>
+
+            ${
+                showMarkRead
+                    ? `
+                        <button
+                            type="button"
+                            class="mark-read-btn"
+                            id="markReadButton"
+                        >
+                            Mark as Read
+                        </button>
+                    `
+                    : ""
+            }
+
+        </div>
+    `;
+
+    /*
+        Restore any unsent reply for this message.
+    */
+
+    document.getElementById("replyInput").value =
+        replyDrafts.get(activeMessageId) || "";
+
+    document.getElementById("markReadButton")
+        ?.addEventListener("click", async () => {
+
+            await updateMessageStatus(activeMessageId, "Read");
+
+        });
+
+    document.getElementById("chatContent").scrollTop =
+        document.getElementById("chatContent").scrollHeight;
+}
+
+
+/* =====================================
+   SAVE UNSENT REPLY
+===================================== */
+
+function saveCurrentDraft() {
+
+    if (activeMessageId === null) {
+        return;
+    }
+
+    const input = document.getElementById("replyInput");
+
+    if (input) {
+
+        replyDrafts.set(
+            activeMessageId,
+            input.value
+        );
+
+    }
+}
+
+
+/* =====================================
+   MINIMISE CHAT WINDOW
+===================================== */
+
+function minimiseChat() {
+
+    /*
+        This minimises the chat window only.
+        It does not hide or delete the message card.
+    */
+
+    saveCurrentDraft();
+
+    hideChatModal();
+}
+
+
+/* =====================================
+   CLOSE CHAT WINDOW
+===================================== */
+
+function closeChatModal() {
+
+    saveCurrentDraft();
+
+    hideChatModal();
+}
+
+
+function hideChatModal() {
+
+    document
+        .getElementById("chatBackdrop")
+        .classList.add("hidden");
+
+    activeMessageId = null;
+}
+
+
+/* =====================================
+   SEND REPLY
+===================================== */
+
+async function sendReply() {
+
+    if (activeMessageId === null) {
+        return;
+    }
+
+    const id = String(activeMessageId);
+
+    const input = document.getElementById("replyInput");
+
+    const replyText = input.value.trim();
+
+    if (!replyText) {
+
+        alert("Please write a reply first.");
+
+        input.focus();
+
+        return;
+    }
+
+    const sendButton =
+        document.getElementById("sendReplyButton");
+
+    sendButton.disabled = true;
+
+    sendButton.textContent = "Sending...";
+
+    try {
+
+        const {
+            data: message,
+            error: messageError
+        } = await supabaseClient
+            .from("messages")
+            .select("id, user_id")
+            .eq("id", id)
+            .single();
+
+        if (messageError) {
+            throw messageError;
+        }
+
+        const {
+            error: replyError
+        } = await supabaseClient
+            .from("message_replies")
+            .insert({
+                message_id: message.id,
+                user_id: message.user_id,
+                admin_email: currentAdmin?.email || "",
+                reply: replyText
+            });
+
+        if (replyError) {
+            throw replyError;
+        }
+
+        /*
+            Clear the saved draft after successful sending.
+        */
+
+        replyDrafts.delete(id);
+
+        const {
+            error: statusError
+        } = await supabaseClient
+            .from("messages")
+            .update({
+                status: "Replied"
+            })
+            .eq("id", id);
+
+        if (statusError) {
+            console.error("Status update failed:", statusError);
+        }
+
+        showStatus("Reply sent successfully.");
+
+        await loadMessages();
+
+        /*
+            Keep the same chat open after sending.
+        */
+
+        if (getMessage(id)) {
+
+            activeMessageId = id;
+
+            document
+                .getElementById("chatBackdrop")
+                .classList.remove("hidden");
+
+            renderActiveChat();
+
+            document.getElementById("replyInput").focus();
+        }
+
+    } catch (error) {
+
+        console.error("Reply failed:", error);
+
+        alert(
+            "Could not send the reply:\n\n" +
+            (error.message || "Unknown error")
+        );
+
+    } finally {
+
+        sendButton.disabled = false;
+
+        sendButton.textContent = "Send Reply";
+    }
+}
+
+
+/* =====================================
+   UPDATE MESSAGE STATUS
+===================================== */
+
+async function updateMessageStatus(messageId, newStatus) {
+
+    const id = String(messageId);
+
+    try {
+
+        const {
+            error
+        } = await supabaseClient
+            .from("messages")
+            .update({
+                status: newStatus
+            })
+            .eq("id", id);
+
+        if (error) {
+            throw error;
+        }
+
+        showStatus("Message marked as read.");
+
+        await loadMessages();
+
+    } catch (error) {
+
+        console.error("Status update failed:", error);
+
+        alert(
+            "Could not update message status:\n\n" +
+            (error.message || "Unknown error")
+        );
+    }
+}
+
+
+/* =====================================
+   DELETE MESSAGE
+===================================== */
+
+async function deleteMessage(messageId) {
+
+    const id = String(messageId);
+
+    const confirmed = confirm(
+        "Are you sure you want to permanently delete this message and all its replies?"
+    );
+
+    if (!confirmed) {
+        return;
+    }
+
+    try {
+
+        /*
+            Delete replies first.
+        */
+
+        const {
+            error: repliesError
+        } = await supabaseClient
+            .from("message_replies")
+            .delete()
+            .eq("message_id", id);
+
+        if (repliesError) {
+            throw repliesError;
+        }
+
+        /*
+            Then delete the original message.
+        */
+
+        const {
+            error: messageError
+        } = await supabaseClient
+            .from("messages")
+            .delete()
+            .eq("id", id);
+
+        if (messageError) {
+            throw messageError;
+        }
+
+        /*
+            Remove local UI state for the deleted message.
+        */
+
+        collapsedMessageCards.delete(id);
+
+        replyDrafts.delete(id);
+
+        if (activeMessageId === id) {
+            hideChatModal();
+        }
+
+        showStatus("Message deleted successfully.");
+
+        await loadMessages();
+
+    } catch (error) {
+
+        console.error("Delete failed:", error);
+
+        alert(
+            "Could not delete the message:\n\n" +
+            (error.message || "Unknown error")
+        );
+    }
+}
+
+
+/* =====================================
+   EVENT HANDLING
+===================================== */
+
+document.addEventListener("click", async event => {
+
+    const button = event.target.closest("[data-action]");
+
+    if (!button) {
+        return;
+    }
+
+    const action = button.dataset.action;
+
+    const messageId = button.dataset.messageId;
+
+    if (!messageId) {
+        return;
+    }
+
+    switch (action) {
+
+        case "open":
+            openChat(messageId);
+            break;
+
+        case "hide-card":
+            hideMessageCard(messageId);
+            break;
+
+        case "show-card":
+            showMessageCard(messageId);
+            break;
+
+        case "delete":
+            await deleteMessage(messageId);
+            break;
+    }
+
+});
+
+
+/* =====================================
+   CHAT BUTTON EVENTS
+===================================== */
+
+document
+    .getElementById("minimiseChatButton")
+    .addEventListener("click", minimiseChat);
+
+document
+    .getElementById("closeChatButton")
+    .addEventListener("click", closeChatModal);
+
+document
+    .getElementById("sendReplyButton")
+    .addEventListener("click", sendReply);
+
+document
+    .getElementById("deleteFromChatButton")
+    .addEventListener("click", async () => {
+
+        if (activeMessageId !== null) {
+            await deleteMessage(activeMessageId);
+        }
+
+    });
+
+
+/*
+    Preserve reply drafts while typing.
+*/
+
+document
+    .getElementById("replyInput")
+    .addEventListener("input", saveCurrentDraft);
+
+
+/*
+    Enter sends the reply.
+    Shift+Enter inserts a new line.
+*/
+
+document
+    .getElementById("replyInput")
+    .addEventListener("keydown", async event => {
+
+        if (
+            event.key === "Enter" &&
+            !event.shiftKey
+        ) {
+
+            event.preventDefault();
+
+            await sendReply();
+        }
+
+    });
+
+
+/*
+    Clicking the dark area outside the chat closes it.
+*/
+
+document
+    .getElementById("chatBackdrop")
+    .addEventListener("click", event => {
+
+        if (event.target.id === "chatBackdrop") {
+            closeChatModal();
+        }
+
+    });
+
+
+/*
+    Escape closes the chat without deleting anything.
+*/
+
+document.addEventListener("keydown", event => {
+
+    if (
+        event.key === "Escape" &&
+        !document
+            .getElementById("chatBackdrop")
+            .classList.contains("hidden")
+    ) {
+
+        closeChatModal();
+    }
+
+});
+
+
+/* =====================================
+   HELPER FUNCTIONS
+===================================== */
+
+function getStatusClass(status) {
+
+    const normalised =
+        String(status || "New").toLowerCase();
+
+    if (normalised === "replied") {
+        return "status-replied";
+    }
+
+    if (normalised === "read") {
+        return "status-read";
+    }
+
+    return "status-new";
+}
+
+
+function formatDate(value) {
+
+    if (!value) {
+        return "Unknown";
+    }
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return String(value);
+    }
+
+    return date.toLocaleString("en-AU", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+    });
+}
+
+
+function escapeHtml(value) {
+
+    if (value === null || value === undefined) {
+        return "";
+    }
+
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+
+/* =====================================
+   NAVIGATION
+===================================== */
+
+document
+    .getElementById("backButton")
+    .addEventListener("click", () => {
+
+        window.location.href = "admin.html";
+
+    });
+
+
+/* =====================================
+   LOGOUT
+===================================== */
+
+document
+    .getElementById("logoutButton")
+    .addEventListener("click", async () => {
+
+        const confirmed = confirm(
+            "Are you sure you want to log out?"
+        );
+
+        if (!confirmed) {
+            return;
+        }
+
+        try {
+
+            await supabaseClient.auth.signOut({
+                scope: "local"
+            });
+
+        } catch (error) {
+
+            console.error("Logout failed:", error);
+        }
+
+        localStorage.removeItem(ADMIN_STORAGE_KEY);
+
+        window.location.replace("admin-login.html");
+    });
+
+
+/* =====================================
+   START PAGE
+===================================== */
+
+async function startPage() {
+
+    const authorised = await checkAdminLogin();
+
+    if (!authorised) {
+        return;
+    }
+
+    await loadMessages();
+}
+
+startPage();
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>KAKA Settings</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            color: #222;
+        }
+
+        .top-bar {
+            background: #222;
+            color: white;
+            padding: 18px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .top-bar h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .top-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            border: none;
+            border-radius: 6px;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .back-button {
+            background: white;
+            color: #222;
+        }
+
+        .logout {
+            background: #d9534f;
+            color: white;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+            padding: 25px 20px;
+        }
+
+        .section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .section h2 {
+            margin-top: 0;
+        }
+
+        .add-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .add-row input {
+            flex: 1;
+            padding: 11px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+
+        .add-button {
+            background: #222;
+            color: white;
+        }
+
+        .options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .option {
+            background: #eee;
+            border-radius: 6px;
+            padding: 8px 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .delete-button {
+            background: #d9534f;
+            color: white;
+            padding: 5px 8px;
+            font-size: 12px;
+        }
+
+        .price-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .price-box label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        .price-box input {
+            width: 100%;
+            padding: 11px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+
+        .save-price {
+            margin-top: 15px;
+            background: #222;
+            color: white;
+        }
+
+        .message {
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 6px;
+            background: #eee;
+        }
+
+        @media (max-width: 600px) {
+
+            .top-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .top-buttons {
+                width: 100%;
+            }
+
+            .top-buttons button {
+                flex: 1;
+            }
+
+            .add-row {
+                flex-direction: column;
+            }
+
+            .price-grid {
+                grid-template-columns: 1fr;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="top-bar">
+
+    <h1>
+        KAKA Settings
+    </h1>
+
+
+    <div class="top-buttons">
+
+        <button
+            class="back-button"
+            id="backButton"
+        >
+            Back to Add Products
+        </button>
+
+
+        <button
+            class="logout"
+            id="logoutButton"
+        >
+            Logout
+        </button>
+
+    </div>
+
+</div>
+
+
+<div class="container">
+
+
+    <div
+        id="message"
+        class="message"
+        style="display:none;"
+    ></div>
+
+
+    <!-- BRAND -->
+
+    <div class="section">
+
+        <h2>
+            Brand
+        </h2>
+
+        <div class="add-row">
+
+            <input
+                type="text"
+                id="brandInput"
+                placeholder="Enter brand"
+            >
+
+            <button
+                class="add-button"
+                id="addBrand"
+            >
+                Add
+            </button>
+
+        </div>
+
+        <div
+            class="options"
+            id="brandOptions"
+        ></div>
+
+    </div>
+
+
+    <!-- SIZE -->
+
+    <div class="section">
+
+        <h2>
+            Size
+        </h2>
+
+        <div class="add-row">
+
+            <input
+                type="text"
+                id="sizeInput"
+                placeholder="Enter size"
+            >
+
+            <button
+                class="add-button"
+                id="addSize"
+            >
+                Add
+            </button>
+
+        </div>
+
+        <div
+            class="options"
+            id="sizeOptions"
+        ></div>
+
+    </div>
+
+
+    <!-- GENDER -->
+
+    <div class="section">
+
+        <h2>
+            Gender
+        </h2>
+
+        <div class="add-row">
+
+            <input
+                type="text"
+                id="genderInput"
+                placeholder="Enter gender"
+            >
+
+            <button
+                class="add-button"
+                id="addGender"
+            >
+                Add
+            </button>
+
+        </div>
+
+        <div
+            class="options"
+            id="genderOptions"
+        ></div>
+
+    </div>
+
+
+    <!-- CATEGORY -->
+
+    <div class="section">
+
+        <h2>
+            Category
+        </h2>
+
+        <div class="add-row">
+
+            <input
+                type="text"
+                id="categoryInput"
+                placeholder="Enter category"
+            >
+
+            <button
+                class="add-button"
+                id="addCategory"
+            >
+                Add
+            </button>
+
+        </div>
+
+        <div
+            class="options"
+            id="categoryOptions"
+        ></div>
+
+    </div>
+
+
+    <!-- COLOUR -->
+
+    <div class="section">
+
+        <h2>
+            Colour
+        </h2>
+
+        <div class="add-row">
+
+            <input
+                type="text"
+                id="colourInput"
+                placeholder="Enter colour"
+            >
+
+            <button
+                class="add-button"
+                id="addColour"
+            >
+                Add
+            </button>
+
+        </div>
+
+        <div
+            class="options"
+            id="colourOptions"
+        ></div>
+
+    </div>
+
+
+    <!-- PRICE RANGE -->
+
+    <div class="section">
+
+        <h2>
+            Price Range
+        </h2>
+
+        <div class="price-grid">
+
+            <div class="price-box">
+
+                <label for="priceMin">
+                    Minimum Price (₹)
+                </label>
+
+                <input
+                    type="number"
+                    id="priceMin"
+                    min="0"
+                    step="1"
+                    placeholder="₹ Minimum"
+                >
+
+            </div>
+
+
+            <div class="price-box">
+
+                <label for="priceMax">
+                    Maximum Price (₹)
+                </label>
+
+                <input
+                    type="number"
+                    id="priceMax"
+                    min="0"
+                    step="1"
+                    placeholder="₹ Maximum"
+                >
+
+            </div>
+
+        </div>
+
+
+        <button
+            class="save-price"
+            id="savePriceRange"
+        >
+            Save Price Range
+        </button>
+
+    </div>
+
+
+</div>
+
+
+<script>
+
+
+/* SUPABASE */
+
+const SUPABASE_URL =
+    "https://oikdlfdviruwwukwosmn.supabase.co";
+
+
+const SUPABASE_KEY =
+    "sb_publishable_bMEfqkt2eZPBiNDXY8gbEA_okVZKsLU";
+
+
+const supabaseClient =
+    supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+    );
+
+
+/* ELEMENTS */
+
+const message =
+    document.getElementById(
+        "message"
+    );
+
+
+/* SHOW MESSAGE */
+
+function showMessage(text) {
+
+    message.textContent =
+        text;
+
+    message.style.display =
+        "block";
+
+
+    setTimeout(
+        () => {
+
+            message.style.display =
+                "none";
+
+        },
+        3000
+    );
+
+}
+
+
+/* CHECK LOGIN */
+
+async function checkLogin() {
+
+    const {
+        data
+    } =
+        await supabaseClient.auth.getSession();
+
+
+    if (
+        !data.session
+    ) {
+
+        window.location.href =
+            "admin.html";
+
+        return false;
+
+    }
+
+
+    return true;
+
+}
+
+
+/* LOAD OPTIONS */
+
+async function loadOptions() {
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient
+            .from("dropdown_options")
+            .select("*")
+            .order(
+                "sort_order",
+                {
+                    ascending: true
+                }
+            )
+            .order(
+                "created_at",
+                {
+                    ascending: true
+                }
+            );
+
+
+    if (error) {
+
+        console.error(error);
+
+        showMessage(
+            "Could not load settings."
+        );
+
+        return;
+
+    }
+
+
+    const options =
+        data || [];
+
+
+    renderOptions(
+        options,
+        "brand",
+        "brandOptions"
+    );
+
+
+    renderOptions(
+        options,
+        "size",
+        "sizeOptions"
+    );
+
+
+    renderOptions(
+        options,
+        "gender",
+        "genderOptions"
+    );
+
+
+    renderOptions(
+        options,
+        "category",
+        "categoryOptions"
+    );
+
+
+    renderOptions(
+        options,
+        "colour",
+        "colourOptions"
+    );
+
+
+    loadPriceRange(
+        options
+    );
+
+}
+
+
+/* RENDER OPTIONS */
+
+function renderOptions(
+    options,
+    type,
+    containerId
+) {
+
+    const container =
+        document.getElementById(
+            containerId
+        );
+
+
+    container.innerHTML =
+        "";
+
+
+    const filtered =
+        options.filter(
+            option =>
+                String(
+                    option.type
+                ).toLowerCase()
+                ===
+                type.toLowerCase()
+        );
+
+
+    filtered.forEach(
+        option => {
+
+            const div =
+                document.createElement(
+                    "div"
+                );
+
+
+            div.className =
+                "option";
+
+
+            const text =
+                document.createElement(
+                    "span"
+                );
+
+
+            text.textContent =
+                option.value;
+
+
+            const button =
+                document.createElement(
+                    "button"
+                );
+
+
+            button.className =
+                "delete-button";
+
+
+            button.textContent =
+                "Delete";
+
+
+            button.addEventListener(
+                "click",
+                () =>
+                    deleteOption(
+                        option.id,
+                        option.value
+                    )
+            );
+
+
+            div.appendChild(
+                text
+            );
+
+
+            div.appendChild(
+                button
+            );
+
+
+            container.appendChild(
+                div
+            );
+
+        }
+    );
+
+}
+
+
+/* ADD OPTION */
+
+async function addOption(
+    type,
+    inputId
+) {
+
+    const input =
+        document.getElementById(
+            inputId
+        );
+
+
+    const value =
+        input.value.trim();
+
+
+    if (!value) {
+
+        alert(
+            "Please enter a value."
+        );
+
+        return;
+
+    }
+
+
+    const {
+        data: existing,
+        error: existingError
+    } =
+        await supabaseClient
+            .from("dropdown_options")
+            .select("id")
+            .eq("type", type)
+            .eq("value", value)
+            .maybeSingle();
+
+
+    if (existingError) {
+
+        console.error(
+            existingError
+        );
+
+        alert(
+            existingError.message
+        );
+
+        return;
+
+    }
+
+
+    if (existing) {
+
+        alert(
+            "This value already exists."
+        );
+
+        return;
+
+    }
+
+
+    const {
+        error
+    } =
+        await supabaseClient
+            .from("dropdown_options")
+            .insert({
+                type: type,
+                value: value,
+                sort_order: 0
+            });
+
+
+    if (error) {
+
+        console.error(error);
+
+        alert(
+            "Could not add value: "
+            +
+            error.message
+        );
+
+        return;
+
+    }
+
+
+    input.value =
+        "";
+
+
+    showMessage(
+        "Value added."
+    );
+
+
+    loadOptions();
+
+}
+
+
+/* DELETE OPTION */
+
+async function deleteOption(
+    id,
+    value
+) {
+
+    const confirmed =
+        confirm(
+            'Delete "' +
+            value +
+            '"?'
+        );
+
+
+    if (!confirmed) {
+
+        return;
+
+    }
+
+
+    const {
+        error
+    } =
+        await supabaseClient
+            .from("dropdown_options")
+            .delete()
+            .eq("id", id);
+
+
+    if (error) {
+
+        console.error(error);
+
+        alert(
+            "Could not delete value: "
+            +
+            error.message
+        );
+
+        return;
+
+    }
+
+
+    showMessage(
+        "Value deleted."
+    );
+
+
+    loadOptions();
+
+}
+
+
+/* LOAD PRICE RANGE */
+
+function loadPriceRange(
+    options
+) {
+
+    const minOption =
+        options.find(
+            option =>
+                option.type ===
+                "price_min"
+        );
+
+
+    const maxOption =
+        options.find(
+            option =>
+                option.type ===
+                "price_max"
+        );
+
+
+    if (minOption) {
+
+        document.getElementById(
+            "priceMin"
+        ).value =
+            minOption.value;
+
+    }
+
+
+    if (maxOption) {
+
+        document.getElementById(
+            "priceMax"
+        ).value =
+            maxOption.value;
+
+    }
+
+}
+
+
+/* SAVE PRICE RANGE */
+
+async function savePriceRange() {
+
+    let min =
+        Number(
+            document.getElementById(
+                "priceMin"
+            ).value
+        );
+
+
+    let max =
+        Number(
+            document.getElementById(
+                "priceMax"
+            ).value
+        );
+
+
+    if (
+        !Number.isFinite(min)
+        ||
+        !Number.isFinite(max)
+    ) {
+
+        alert(
+            "Please enter both prices."
+        );
+
+        return;
+
+    }
+
+
+    if (
+        min < 0
+        ||
+        max < 0
+    ) {
+
+        alert(
+            "Prices cannot be negative."
+        );
+
+        return;
+
+    }
+
+
+    if (
+        max <= min
+    ) {
+
+        alert(
+            "Maximum price must be greater than minimum price."
+        );
+
+        return;
+
+    }
+
+
+    /* SAVE MIN */
+
+    const {
+        data: existingMin
+    } =
+        await supabaseClient
+            .from("dropdown_options")
+            .select("id")
+            .eq(
+                "type",
+                "price_min"
+            )
+            .maybeSingle();
+
+
+    let minError;
+
+
+    if (existingMin) {
+
+        const result =
+            await supabaseClient
+                .from("dropdown_options")
+                .update({
+                    value: String(min)
+                })
+                .eq(
+                    "id",
+                    existingMin.id
+                );
+
+        minError =
+            result.error;
+
+    }
+
+    else {
+
+        const result =
+            await supabaseClient
+                .from("dropdown_options")
+                .insert({
+                    type: "price_min",
+                    value: String(min),
+                    sort_order: 0
+                });
+
+        minError =
+            result.error;
+
+    }
+
+
+    if (minError) {
+
+        console.error(
+            minError
+        );
+
+        alert(
+            "Could not save minimum price: "
+            +
+            minError.message
+        );
+
+        return;
+
+    }
+
+
+    /* SAVE MAX */
+
+    const {
+        data: existingMax
+    } =
+        await supabaseClient
+            .from("dropdown_options")
+            .select("id")
+            .eq(
+                "type",
+                "price_max"
+            )
+            .maybeSingle();
+
+
+    let maxError;
+
+
+    if (existingMax) {
+
+        const result =
+            await supabaseClient
+                .from("dropdown_options")
+                .update({
+                    value: String(max)
+                })
+                .eq(
+                    "id",
+                    existingMax.id
+                );
+
+        maxError =
+            result.error;
+
+    }
+
+    else {
+
+        const result =
+            await supabaseClient
+                .from("dropdown_options")
+                .insert({
+                    type: "price_max",
+                    value: String(max),
+                    sort_order: 0
+                });
+
+        maxError =
+            result.error;
+
+    }
+
+
+    if (maxError) {
+
+        console.error(
+            maxError
+        );
+
+        alert(
+            "Could not save maximum price: "
+            +
+            maxError.message
+        );
+
+        return;
+
+    }
+
+
+    showMessage(
+        "Price range saved in ₹."
+    );
+
+}
+
+
+/* BUTTONS */
+
+document
+    .getElementById(
+        "addBrand"
+    )
+    .addEventListener(
+        "click",
+        () =>
+            addOption(
+                "brand",
+                "brandInput"
+            )
+    );
+
+
+document
+    .getElementById(
+        "addSize"
+    )
+    .addEventListener(
+        "click",
+        () =>
+            addOption(
+                "size",
+                "sizeInput"
+            )
+    );
+
+
+document
+    .getElementById(
+        "addGender"
+    )
+    .addEventListener(
+        "click",
+        () =>
+            addOption(
+                "gender",
+                "genderInput"
+            )
+    );
+
+
+document
+    .getElementById(
+        "addCategory"
+    )
+    .addEventListener(
+        "click",
+        () =>
+            addOption(
+                "category",
+                "categoryInput"
+            )
+    );
+
+
+document
+    .getElementById(
+        "addColour"
+    )
+    .addEventListener(
+        "click",
+        () =>
+            addOption(
+                "colour",
+                "colourInput"
+            )
+    );
+
+
+document
+    .getElementById(
+        "savePriceRange"
+    )
+    .addEventListener(
+        "click",
+        savePriceRange
+    );
+
+
+document
+    .getElementById(
+        "backButton"
+    )
+    .addEventListener(
+        "click",
+        () => {
+
+            window.location.href =
+                "admin.html";
+
+        }
+    );
+
+
+document
+    .getElementById(
+        "logoutButton"
+    )
+    .addEventListener(
+        "click",
+        async () => {
+
+            await supabaseClient.auth.signOut();
+
+            window.location.href =
+                "admin.html";
+
+        }
+    );
+
+
+/* START */
+
+(async function () {
+
+    const loggedIn =
+        await checkLogin();
+
+
+    if (!loggedIn) {
+
+        return;
+
+    }
+
+
+    await loadOptions();
+
+})();
+
+</script>
+
+</body>
+
+</html>

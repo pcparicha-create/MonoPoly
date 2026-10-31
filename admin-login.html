@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>KAKA Admin Login</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+
+            font-family: Arial, sans-serif;
+
+            background: #f4f4f4;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            padding: 20px;
+        }
+
+        .login-box {
+            width: 100%;
+            max-width: 420px;
+
+            background: white;
+
+            padding: 35px;
+
+            border-radius: 15px;
+
+            box-shadow:
+                0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        h1 {
+            margin-top: 0;
+            margin-bottom: 5px;
+
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+
+            color: #666;
+
+            margin-bottom: 30px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+
+            gap: 7px;
+
+            margin-bottom: 18px;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+
+            padding: 12px;
+
+            border: 1px solid #ccc;
+
+            border-radius: 8px;
+
+            font-size: 16px;
+        }
+
+        input:focus {
+            outline: none;
+
+            border-color: #4b7bec;
+        }
+
+        button {
+            width: 100%;
+
+            padding: 13px;
+
+            border: none;
+
+            border-radius: 8px;
+
+            background: #222;
+
+            color: white;
+
+            font-size: 16px;
+
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #333;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+
+            cursor: not-allowed;
+        }
+
+        .message {
+            min-height: 22px;
+
+            margin-top: 15px;
+
+            text-align: center;
+
+            font-weight: bold;
+        }
+
+        .back-link {
+            display: block;
+
+            margin-top: 20px;
+
+            text-align: center;
+
+            color: #4b7bec;
+
+            text-decoration: none;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="login-box">
+
+    <h1>
+        KAKA Admin
+    </h1>
+
+    <div class="subtitle">
+        Admin Login
+    </div>
+
+
+    <form id="loginForm">
+
+        <div class="field">
+
+            <label for="email">
+                Email
+            </label>
+
+            <input
+                type="email"
+                id="email"
+                placeholder="Admin email"
+                required
+                autocomplete="email"
+            >
+
+        </div>
+
+
+        <div class="field">
+
+            <label for="password">
+                Password
+            </label>
+
+            <input
+                type="password"
+                id="password"
+                placeholder="Password"
+                required
+                autocomplete="current-password"
+            >
+
+        </div>
+
+
+        <button
+            type="submit"
+            id="loginButton"
+        >
+            Login
+        </button>
+
+
+        <div
+            class="message"
+            id="message"
+        ></div>
+
+    </form>
+
+
+    <a
+        href="user.html"
+        class="back-link"
+    >
+        Back to Catalogue
+    </a>
+
+
+</div>
+
+
+<script>
+
+/* =========================
+   SUPABASE
+========================= */
+
+const SUPABASE_URL =
+    "https://oikdlfdviruwwukwosmn.supabase.co";
+
+const SUPABASE_KEY =
+    "sb_publishable_bMEfqkt2eZPBiNDXY8gbEA_okVZKsLU";
+
+const ADMIN_STORAGE_KEY =
+    "kaka_admin_auth";
+
+const LOGIN_FLAG =
+    "kaka_login_verified";
+
+
+const supabaseClient =
+    supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY,
+        {
+            auth: {
+                storageKey:
+                    ADMIN_STORAGE_KEY,
+
+                persistSession:
+                    true,
+
+                autoRefreshToken:
+                    true,
+
+                detectSessionInUrl:
+                    true
+            }
+        }
+    );
+
+
+/* =========================
+   ELEMENTS
+========================= */
+
+const loginForm =
+    document.getElementById(
+        "loginForm"
+    );
+
+const loginButton =
+    document.getElementById(
+        "loginButton"
+    );
+
+const message =
+    document.getElementById(
+        "message"
+    );
+
+
+/* =========================
+   CLEAR OLD LOGIN
+========================= */
+
+async function prepareLoginPage() {
+
+    /*
+        Remove our own login flag.
+    */
+
+    sessionStorage.removeItem(
+        LOGIN_FLAG
+    );
+
+
+    /*
+        Sign out any existing local
+        Supabase session.
+    */
+
+    try {
+
+        await supabaseClient
+            .auth
+            .signOut({
+                scope: "local"
+            });
+
+    }
+    catch (error) {
+
+        console.log(
+            "No previous session to clear."
+        );
+
+    }
+
+}
+
+
+/* =========================
+   LOGIN
+========================= */
+
+loginForm.addEventListener(
+    "submit",
+    async event => {
+
+        event.preventDefault();
+
+
+        const email =
+            document
+                .getElementById(
+                    "email"
+                )
+                .value
+                .trim();
+
+
+        const password =
+            document
+                .getElementById(
+                    "password"
+                )
+                .value;
+
+
+        message.textContent = "";
+
+
+        if (
+            !email ||
+            !password
+        ) {
+
+            message.textContent =
+                "Please enter your email and password.";
+
+            return;
+
+        }
+
+
+        loginButton.disabled =
+            true;
+
+        loginButton.textContent =
+            "Logging in...";
+
+
+        try {
+
+            /*
+                Login to Supabase.
+            */
+
+            const {
+                data,
+                error
+            } =
+                await supabaseClient
+                    .auth
+                    .signInWithPassword({
+                        email:
+                            email,
+
+                        password:
+                            password
+                    });
+
+
+            if (error) {
+
+                throw error;
+
+            }
+
+
+            if (
+                !data ||
+                !data.session ||
+                !data.session.user
+            ) {
+
+                throw new Error(
+                    "Login succeeded but no session was created."
+                );
+
+            }
+
+
+            /*
+                Check admin_users table.
+            */
+
+            const {
+                data: adminUser,
+                error: adminError
+            } =
+                await supabaseClient
+                    .from("admin_users")
+                    .select("id, email")
+                    .eq(
+                        "id",
+                        data.session.user.id
+                    )
+                    .maybeSingle();
+
+
+            if (adminError) {
+
+                throw adminError;
+
+            }
+
+
+            if (!adminUser) {
+
+                await supabaseClient
+                    .auth
+                    .signOut({
+                        scope: "local"
+                    });
+
+                throw new Error(
+                    "This account is not authorised as an admin."
+                );
+
+            }
+
+
+            /*
+                IMPORTANT:
+
+                Mark this browser tab as
+                having completed login.
+            */
+
+            sessionStorage.setItem(
+                LOGIN_FLAG,
+                "true"
+            );
+
+
+            message.textContent =
+                "Login successful!";
+
+
+            loginButton.textContent =
+                "Opening Admin...";
+
+
+            /*
+                Go to admin.
+            */
+
+            window.location.replace(
+                "admin.html"
+            );
+
+        }
+        catch (error) {
+
+            console.error(
+                "Admin login error:",
+                error
+            );
+
+
+            sessionStorage.removeItem(
+                LOGIN_FLAG
+            );
+
+
+            message.textContent =
+                error.message ||
+                "Login failed.";
+
+
+            loginButton.disabled =
+                false;
+
+            loginButton.textContent =
+                "Login";
+
+        }
+
+    }
+);
+
+
+/* =========================
+   START
+========================= */
+
+prepareLoginPage();
+
+</script>
+
+
+</body>
+
+</html> 

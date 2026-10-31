@@ -1,0 +1,3096 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>KAKA Admin</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+
+            font-family: Arial, sans-serif;
+
+            background: #f4f4f4;
+
+            color: #222;
+        }
+
+
+        /* =========================
+           TOP BAR
+        ========================= */
+
+        .top-bar {
+            background: #222;
+
+            color: white;
+
+            padding: 15px 25px;
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            gap: 15px;
+        }
+
+
+        .top-bar h1 {
+            margin: 0;
+        }
+
+
+        .top-buttons {
+            display: flex;
+
+            gap: 10px;
+
+            flex-wrap: wrap;
+        }
+
+
+        button {
+            cursor: pointer;
+
+            border: none;
+
+            border-radius: 7px;
+
+            padding: 10px 15px;
+
+            font-size: 14px;
+        }
+
+
+        button:disabled {
+            cursor: not-allowed;
+
+            opacity: 0.6;
+        }
+
+
+        .settings-button {
+            background: #4b7bec;
+
+            color: white;
+        }
+
+
+        .messages-button {
+            background: #8e44ad;
+
+            color: white;
+        }
+
+
+        .logout {
+            background: #e74c3c;
+
+            color: white;
+        }
+
+
+        /* =========================
+           CONTAINER
+        ========================= */
+
+        .container {
+            max-width: 1100px;
+
+            margin: 30px auto;
+
+            padding: 0 20px;
+        }
+
+
+        .box {
+            background: white;
+
+            padding: 25px;
+
+            border-radius: 12px;
+
+            margin-bottom: 25px;
+        }
+
+
+        h2 {
+            margin-top: 0;
+        }
+
+
+        /* =========================
+           FORM
+        ========================= */
+
+        .form-grid {
+            display: grid;
+
+            grid-template-columns:
+                repeat(2, 1fr);
+
+            gap: 15px;
+        }
+
+
+        .field {
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 6px;
+        }
+
+
+        .field.full {
+            grid-column: 1 / -1;
+        }
+
+
+        label {
+            font-weight: bold;
+        }
+
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+
+            padding: 11px;
+
+            border: 1px solid #ccc;
+
+            border-radius: 7px;
+
+            font-size: 15px;
+        }
+
+
+        textarea {
+            min-height: 90px;
+
+            resize: vertical;
+        }
+
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+
+            border-color: #4b7bec;
+        }
+
+
+        .submit-button {
+            background: #27ae60;
+
+            color: white;
+
+            margin-top: 20px;
+
+            font-size: 16px;
+        }
+
+
+        .cancel-button {
+            background: #777;
+
+            color: white;
+
+            margin-top: 20px;
+
+            margin-left: 8px;
+        }
+
+
+        /* =========================
+           SAVE MESSAGE
+        ========================= */
+
+        .message {
+            margin-top: 15px;
+
+            font-weight: bold;
+
+            min-height: 20px;
+        }
+
+
+        /* =========================
+           SIZE / STOCK
+        ========================= */
+
+        .size-stock-area {
+            margin-top: 8px;
+
+            padding: 15px;
+
+            border: 1px solid #ddd;
+
+            border-radius: 8px;
+
+            background: #fafafa;
+        }
+
+
+        .size-row {
+            display: flex;
+
+            align-items: center;
+
+            gap: 12px;
+
+            margin-bottom: 10px;
+        }
+
+
+        .size-row:last-child {
+            margin-bottom: 0;
+        }
+
+
+        .size-row label {
+            min-width: 60px;
+        }
+
+
+        .size-row input {
+            max-width: 150px;
+        }
+
+
+        .size-check {
+            width: 18px;
+
+            height: 18px;
+        }
+
+
+        /* =========================
+           IMAGES
+        ========================= */
+
+        .preview-container {
+            display: flex;
+
+            gap: 10px;
+
+            flex-wrap: wrap;
+
+            margin-top: 12px;
+        }
+
+
+        .preview-wrapper {
+            position: relative;
+        }
+
+
+        .preview-wrapper img {
+            width: 100px;
+
+            height: 100px;
+
+            object-fit: cover;
+
+            border-radius: 8px;
+
+            border: 1px solid #ccc;
+        }
+
+
+        .preview-label {
+            font-size: 11px;
+
+            color: #666;
+
+            margin-top: 3px;
+
+            text-align: center;
+
+            max-width: 100px;
+
+            word-break: break-word;
+        }
+
+
+        .upload-status {
+            margin-top: 8px;
+
+            font-size: 13px;
+
+            color: #555;
+        }
+
+
+        /* =========================
+           PRODUCTS
+        ========================= */
+
+        .product-grid {
+            display: grid;
+
+            grid-template-columns:
+                repeat(
+                    auto-fill,
+                    minmax(230px, 1fr)
+                );
+
+            gap: 20px;
+        }
+
+
+        .product-card {
+            border: 1px solid #ddd;
+
+            border-radius: 10px;
+
+            padding: 15px;
+
+            background: white;
+        }
+
+
+        .product-card img {
+            width: 100%;
+
+            height: 220px;
+
+            object-fit: cover;
+
+            border-radius: 8px;
+        }
+
+
+        .product-card h3 {
+            margin-bottom: 8px;
+        }
+
+
+        .product-card p {
+            margin: 5px 0;
+        }
+
+
+        .card-buttons {
+            display: flex;
+
+            gap: 8px;
+
+            margin-top: 12px;
+        }
+
+
+        .edit-button {
+            background: #3498db;
+
+            color: white;
+        }
+
+
+        .delete-button {
+            background: #e74c3c;
+
+            color: white;
+        }
+
+
+        .image-count {
+            font-size: 12px;
+
+            color: #666;
+
+            margin-top: 5px;
+        }
+
+
+        /* =========================
+           MOBILE
+        ========================= */
+
+        @media (max-width: 700px) {
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+
+            .field.full {
+                grid-column: auto;
+            }
+
+
+            .top-bar {
+                flex-direction: column;
+
+                align-items: stretch;
+            }
+
+
+            .top-buttons {
+                justify-content: flex-start;
+            }
+
+
+            .size-row {
+                flex-wrap: wrap;
+            }
+
+
+            .size-row input {
+                max-width: 180px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<!-- =========================
+     TOP BAR
+========================= -->
+
+<div class="top-bar">
+
+    <h1>
+        KAKA Admin
+    </h1>
+
+
+    <div class="top-buttons">
+
+        <button
+            class="settings-button"
+            id="settingsButton"
+            type="button"
+        >
+            Settings
+        </button>
+
+
+        <button
+            class="messages-button"
+            id="messagesButton"
+            type="button"
+        >
+            Messages
+        </button>
+
+
+        <button
+            class="logout"
+            id="logoutButton"
+            type="button"
+        >
+            Logout
+        </button>
+
+    </div>
+
+</div>
+
+
+<div class="container">
+
+
+<!-- =========================
+     ADD / EDIT PRODUCT
+========================= -->
+
+<div class="box">
+
+    <h2 id="formTitle">
+        Add New Product
+    </h2>
+
+
+    <form id="productForm">
+
+        <div class="form-grid">
+
+
+            <!-- PRODUCT NAME -->
+
+            <div class="field">
+
+                <label for="name">
+                    Product Name
+                </label>
+
+                <input
+                    type="text"
+                    id="name"
+                    required
+                >
+
+            </div>
+
+
+            <!-- BRAND -->
+
+            <div class="field">
+
+                <label for="brand">
+                    Brand
+                </label>
+
+                <select id="brand">
+
+                    <option value="">
+                        Select Brand
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- GENDER -->
+
+            <div class="field">
+
+                <label for="gender">
+                    Gender
+                </label>
+
+                <select id="gender">
+
+                    <option value="">
+                        Select Gender
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- CATEGORY -->
+
+            <div class="field">
+
+                <label for="category">
+                    Category
+                </label>
+
+                <select id="category">
+
+                    <option value="">
+                        Select Category
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- COLOUR -->
+
+            <div class="field">
+
+                <label for="colour">
+                    Colour
+                </label>
+
+                <select id="colour">
+
+                    <option value="">
+                        Select Colour
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- LEGACY SIZE -->
+
+            <div class="field">
+
+                <label for="size">
+                    Legacy Size
+                </label>
+
+                <select id="size">
+
+                    <option value="">
+                        Select Size
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- SIZE STOCK -->
+
+            <div class="field full">
+
+                <label>
+                    Available Sizes & Stock
+                </label>
+
+
+                <div
+                    class="size-stock-area"
+                    id="sizeStockContainer"
+                >
+
+                    <p>
+                        Loading sizes...
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- GENERAL STOCK -->
+
+            <div class="field">
+
+                <label for="stock">
+                    General Stock
+                </label>
+
+                <input
+                    type="number"
+                    id="stock"
+                    min="0"
+                    value="0"
+                >
+
+                <small>
+                    Used for products without size-specific stock.
+                </small>
+
+            </div>
+
+
+            <!-- PRICE -->
+
+            <div class="field">
+
+                <label for="price">
+                    Price (₹)
+                </label>
+
+                <input
+                    type="number"
+                    id="price"
+                    min="0"
+                    step="0.01"
+                    required
+                >
+
+            </div>
+
+
+            <!-- VISIBILITY -->
+
+            <div class="field">
+
+                <label for="isPublic">
+                    Visibility
+                </label>
+
+                <select id="isPublic">
+
+                    <option value="true">
+                        Public
+                    </option>
+
+                    <option value="false">
+                        Hidden
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- DESCRIPTION -->
+
+            <div class="field full">
+
+                <label for="description">
+                    Product Description
+                </label>
+
+                <textarea
+                    id="description"
+                ></textarea>
+
+            </div>
+
+
+            <!-- IMAGES -->
+
+            <div class="field full">
+
+                <label for="imageFiles">
+                    Product Images
+                </label>
+
+                <input
+                    type="file"
+                    id="imageFiles"
+                    accept="image/*"
+                    multiple
+                >
+
+
+                <div
+                    class="upload-status"
+                    id="uploadStatus"
+                ></div>
+
+
+                <div
+                    class="preview-container"
+                    id="previewContainer"
+                ></div>
+
+            </div>
+
+        </div>
+
+
+        <button
+            class="submit-button"
+            type="submit"
+            id="submitButton"
+        >
+            Add Product
+        </button>
+
+
+        <button
+            class="cancel-button"
+            type="button"
+            id="cancelButton"
+            style="display:none;"
+        >
+            Cancel Edit
+        </button>
+
+
+        <div
+            class="message"
+            id="message"
+        ></div>
+
+    </form>
+
+</div>
+
+
+<!-- =========================
+     PRODUCTS
+========================= -->
+
+<div class="box">
+
+    <h2>
+        Products
+    </h2>
+
+
+    <div
+        class="product-grid"
+        id="productGrid"
+    >
+        Loading products...
+    </div>
+
+</div>
+
+
+</div>
+
+
+<script>
+
+/* =========================================================
+   SUPABASE
+========================================================= */
+
+const SUPABASE_URL =
+    "https://oikdlfdviruwwukwosmn.supabase.co";
+
+
+const SUPABASE_KEY =
+    "sb_publishable_bMEfqkt2eZPBiNDXY8gbEA_okVZKsLU";
+
+
+const ADMIN_STORAGE_KEY = 
+    "kaka_admin_auth";
+
+
+const supabaseClient =
+    supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY,
+        {
+            auth: {
+
+                storageKey:
+                    ADMIN_STORAGE_KEY,
+
+                persistSession:
+                    true,
+
+                autoRefreshToken:
+                    true,
+
+                detectSessionInUrl:
+                    true
+
+            }
+        }
+    );
+
+
+/* =========================================================
+   VARIABLES
+========================================================= */
+
+let editingProductId = null;
+
+let existingImages = [];
+
+let selectedFiles = [];
+
+let sizeOptions = [];
+
+
+/* =========================================================
+   AUTH / ADMIN CHECK
+========================================================= */
+
+async function checkLogin() {
+if (sessionStorage.getItem("kaka_login_verified") !== "true") {
+    window.location.replace("admin-login.html");
+    return false;
+}
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient
+            .auth
+            .getSession();
+
+
+    /*
+        No valid session.
+    */
+
+    if (
+        error ||
+        !data.session
+    ) {
+
+        window.location.replace(
+            "admin-login.html"
+        );
+
+        return false;
+
+    }
+
+
+    /*
+        Verify that this user exists
+        in the admin_users table.
+    */
+
+    const {
+        data: adminUser,
+        error: adminError
+    } =
+        await supabaseClient
+            .from("admin_users")
+            .select("id, email")
+            .eq(
+                "id",
+                data.session.user.id
+            )
+            .maybeSingle();
+
+
+    /*
+        Admin verification failed.
+    */
+
+    if (
+        adminError
+    ) {
+
+        console.error(
+            "Admin verification error:",
+            adminError
+        );
+
+
+        await supabaseClient
+            .auth
+            .signOut({
+                scope: "local"
+            });
+
+
+        window.location.replace(
+            "admin-login.html"
+        );
+
+
+        return false;
+
+    }
+
+
+    /*
+        Logged-in account is not an admin.
+    */
+
+    if (
+        !adminUser
+    ) {
+
+        await supabaseClient
+            .auth
+            .signOut({
+                scope: "local"
+            });
+
+
+        alert(
+            "This account is not authorised as an admin."
+        );
+
+
+        window.location.replace(
+            "admin-login.html"
+        );
+
+
+        return false;
+
+    }
+
+
+    return true;
+
+}
+
+
+/* =========================================================
+   LOGOUT
+========================================================= */
+
+document
+    .getElementById(
+        "logoutButton"
+    )
+    .addEventListener(
+        "click",
+        async () => {
+
+            try {
+
+                await supabaseClient
+                    .auth
+                    .signOut({
+                        scope: "local"
+                    });
+
+            }
+            catch (error) {
+
+                console.error(
+                    "Logout error:",
+                    error
+                );
+
+            }
+
+
+            window.location.replace(
+                "admin-login.html"
+            );
+
+        }
+    );
+
+
+/* =========================================================
+   SETTINGS
+========================================================= */
+
+document
+    .getElementById(
+        "settingsButton"
+    )
+    .addEventListener(
+        "click",
+        () => {
+
+            window.location.href =
+                "settings.html";
+
+        }
+    );
+
+
+/* =========================================================
+   MESSAGES
+========================================================= */
+
+document
+    .getElementById(
+        "messagesButton"
+    )
+    .addEventListener(
+        "click",
+        () => {
+
+            window.location.href =
+                "messages.html";
+
+        }
+    );
+
+
+/* =========================================================
+   LOAD DROPDOWNS
+========================================================= */
+
+async function loadDropdowns() {
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient
+            .from("dropdown_options")
+            .select("*")
+            .order(
+                "sort_order",
+                {
+                    ascending: true
+                }
+            )
+            .order(
+                "created_at",
+                {
+                    ascending: true
+                }
+            );
+
+
+    if (
+        error
+    ) {
+
+        console.error(
+            "Dropdown loading error:",
+            error
+        );
+
+        return;
+
+    }
+
+
+    sizeOptions =
+        data.filter(
+            item =>
+                item.type === "size"
+        );
+
+
+    populateSelect(
+        "brand",
+        data.filter(
+            item =>
+                item.type === "brand"
+        )
+    );
+
+
+    populateSelect(
+        "gender",
+        data.filter(
+            item =>
+                item.type === "gender"
+        )
+    );
+
+
+    populateSelect(
+        "category",
+        data.filter(
+            item =>
+                item.type === "category"
+        )
+    );
+
+
+    populateSelect(
+        "colour",
+        data.filter(
+            item =>
+                item.type === "colour"
+        )
+    );
+
+
+    populateSelect(
+        "size",
+        sizeOptions
+    );
+
+
+    renderSizeStockInputs();
+
+}
+
+
+/* =========================================================
+   POPULATE SELECT
+========================================================= */
+
+function populateSelect(
+    id,
+    options
+) {
+
+    const select =
+        document.getElementById(
+            id
+        );
+
+
+    const firstOption =
+        select.options[0];
+
+
+    select.innerHTML =
+        "";
+
+
+    select.appendChild(
+        firstOption
+    );
+
+
+    options.forEach(
+        option => {
+
+            const element =
+                document.createElement(
+                    "option"
+                );
+
+
+            element.value =
+                option.value;
+
+
+            element.textContent =
+                option.value;
+
+
+            select.appendChild(
+                element
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   SIZE STOCK INPUTS
+========================================================= */
+
+function renderSizeStockInputs(
+    existing = {}
+) {
+
+    const container =
+        document.getElementById(
+            "sizeStockContainer"
+        );
+
+
+    container.innerHTML =
+        "";
+
+
+    if (
+        sizeOptions.length === 0
+    ) {
+
+        container.innerHTML =
+            "<p>No sizes have been added in Settings yet.</p>";
+
+        return;
+
+    }
+
+
+    sizeOptions.forEach(
+        option => {
+
+            const size =
+                option.value;
+
+
+            const row =
+                document.createElement(
+                    "div"
+                );
+
+
+            row.className =
+                "size-row";
+
+
+            const checkbox =
+                document.createElement(
+                    "input"
+                );
+
+
+            checkbox.type =
+                "checkbox";
+
+
+            checkbox.className =
+                "size-check";
+
+
+            checkbox.dataset.size =
+                size;
+
+
+            const label =
+                document.createElement(
+                    "label"
+                );
+
+
+            label.textContent =
+                size;
+
+
+            const stockInput =
+                document.createElement(
+                    "input"
+                );
+
+
+            stockInput.type =
+                "number";
+
+
+            stockInput.min =
+                "0";
+
+
+            stockInput.value =
+                existing[size] !== undefined
+                    ? existing[size]
+                    : "0";
+
+
+            stockInput.placeholder =
+                "Stock";
+
+
+            if (
+                existing[size] !== undefined
+            ) {
+
+                checkbox.checked =
+                    true;
+
+            }
+
+
+            stockInput.disabled =
+                !checkbox.checked;
+
+
+            checkbox.addEventListener(
+                "change",
+                () => {
+
+                    stockInput.disabled =
+                        !checkbox.checked;
+
+                }
+            );
+
+
+            row.appendChild(
+                checkbox
+            );
+
+
+            row.appendChild(
+                label
+            );
+
+
+            row.appendChild(
+                stockInput
+            );
+
+
+            container.appendChild(
+                row
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   GET SIZE STOCK
+========================================================= */
+
+function getSizeStock() {
+
+    const result = {};
+
+
+    const rows =
+        document.querySelectorAll(
+            ".size-row"
+        );
+
+
+    rows.forEach(
+        row => {
+
+            const checkbox =
+                row.querySelector(
+                    ".size-check"
+                );
+
+
+            const input =
+                row.querySelector(
+                    "input[type='number']"
+                );
+
+
+            if (
+                checkbox.checked
+            ) {
+
+                const size =
+                    checkbox.dataset.size;
+
+
+                const stock =
+                    Math.max(
+                        0,
+                        parseInt(
+                            input.value
+                        ) || 0
+                    );
+
+
+                result[size] =
+                    stock;
+
+            }
+
+        }
+    );
+
+
+    return result;
+
+}
+
+
+/* =========================================================
+   IMAGE COMPRESSION
+========================================================= */
+
+async function compressImage(
+    file
+) {
+
+    const MAX_WIDTH =
+        1600;
+
+
+    const MAX_HEIGHT =
+        1600;
+
+
+    const QUALITY =
+        0.82;
+
+
+    if (
+        !file.type.startsWith(
+            "image/"
+        )
+    ) {
+
+        return file;
+
+    }
+
+
+    return new Promise(
+        resolve => {
+
+            const image =
+                new Image();
+
+
+            const objectUrl =
+                URL.createObjectURL(
+                    file
+                );
+
+
+            image.onload =
+                () => {
+
+                    URL.revokeObjectURL(
+                        objectUrl
+                    );
+
+
+                    let width =
+                        image.naturalWidth;
+
+
+                    let height =
+                        image.naturalHeight;
+
+
+                    if (
+                        width <= MAX_WIDTH &&
+                        height <= MAX_HEIGHT
+                    ) {
+
+                        resolve(file);
+
+                        return;
+
+                    }
+
+
+                    const ratio =
+                        Math.min(
+                            MAX_WIDTH / width,
+                            MAX_HEIGHT / height
+                        );
+
+
+                    width =
+                        Math.round(
+                            width * ratio
+                        );
+
+
+                    height =
+                        Math.round(
+                            height * ratio
+                        );
+
+
+                    const canvas =
+                        document.createElement(
+                            "canvas"
+                        );
+
+
+                    canvas.width =
+                        width;
+
+
+                    canvas.height =
+                        height;
+
+
+                    const context =
+                        canvas.getContext(
+                            "2d"
+                        );
+
+
+                    context.drawImage(
+                        image,
+                        0,
+                        0,
+                        width,
+                        height
+                    );
+
+
+                    canvas.toBlob(
+                        blob => {
+
+                            if (
+                                !blob
+                            ) {
+
+                                resolve(file);
+
+                                return;
+
+                            }
+
+
+                            const compressedFile =
+                                new File(
+                                    [
+                                        blob
+                                    ],
+                                    file.name.replace(
+                                        /\.[^/.]+$/,
+                                        ".jpg"
+                                    ),
+                                    {
+                                        type:
+                                            "image/jpeg"
+                                    }
+                                );
+
+
+                            resolve(
+                                compressedFile
+                            );
+
+                        },
+                        "image/jpeg",
+                        QUALITY
+                    );
+
+                };
+
+
+            image.onerror =
+                () => {
+
+                    URL.revokeObjectURL(
+                        objectUrl
+                    );
+
+
+                    resolve(file);
+
+                };
+
+
+            image.src =
+                objectUrl;
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   IMAGE UPLOAD
+========================================================= */
+
+async function uploadImage(
+    file
+) {
+
+    const compressedFile =
+        await compressImage(
+            file
+        );
+
+
+    const fileName =
+        crypto.randomUUID()
+        + ".jpg";
+
+
+    const {
+        error
+    } =
+        await supabaseClient
+            .storage
+            .from(
+                "product-images"
+            )
+            .upload(
+                fileName,
+                compressedFile,
+                {
+                    cacheControl:
+                        "31536000",
+
+                    upsert:
+                        false,
+
+                    contentType:
+                        "image/jpeg"
+                }
+            );
+
+
+    if (
+        error
+    ) {
+
+        throw error;
+
+    }
+
+
+    const {
+        data
+    } =
+        supabaseClient
+            .storage
+            .from(
+                "product-images"
+            )
+            .getPublicUrl(
+                fileName
+            );
+
+
+    return data.publicUrl;
+
+}
+
+
+/* =========================================================
+   IMAGE PREVIEW
+========================================================= */
+
+document
+    .getElementById(
+        "imageFiles"
+    )
+    .addEventListener(
+        "change",
+        event => {
+
+            selectedFiles =
+                Array.from(
+                    event.target.files
+                );
+
+
+            const container =
+                document.getElementById(
+                    "previewContainer"
+                );
+
+
+            container.innerHTML =
+                "";
+
+
+            selectedFiles.forEach(
+                file => {
+
+                    const wrapper =
+                        document.createElement(
+                            "div"
+                        );
+
+
+                    wrapper.className =
+                        "preview-wrapper";
+
+
+                    const image =
+                        document.createElement(
+                            "img"
+                        );
+
+
+                    image.src =
+                        URL.createObjectURL(
+                            file
+                        );
+
+
+                    image.alt =
+                        file.name;
+
+
+                    wrapper.appendChild(
+                        image
+                    );
+
+
+                    const label =
+                        document.createElement(
+                            "div"
+                        );
+
+
+                    label.className =
+                        "preview-label";
+
+
+                    label.textContent =
+                        file.name;
+
+
+                    wrapper.appendChild(
+                        label
+                    );
+
+
+                    container.appendChild(
+                        wrapper
+                    );
+
+                }
+            );
+
+
+            const uploadStatus =
+                document.getElementById(
+                    "uploadStatus"
+                );
+
+
+            if (
+                selectedFiles.length > 0
+            ) {
+
+                uploadStatus.textContent =
+                    selectedFiles.length
+                    + " image"
+                    + (
+                        selectedFiles.length === 1
+                            ? ""
+                            : "s"
+                    )
+                    + " selected.";
+
+            }
+            else {
+
+                uploadStatus.textContent =
+                    "";
+
+            }
+
+        }
+    );
+
+
+/* =========================================================
+   SUBMIT PRODUCT
+========================================================= */
+
+document
+    .getElementById(
+        "productForm"
+    )
+    .addEventListener(
+        "submit",
+        async event => {
+
+            event.preventDefault();
+
+
+            const message =
+                document.getElementById(
+                    "message"
+                );
+
+
+            const submitButton =
+                document.getElementById(
+                    "submitButton"
+                );
+
+
+            const uploadStatus =
+                document.getElementById(
+                    "uploadStatus"
+                );
+
+
+            submitButton.disabled =
+                true;
+
+
+            message.textContent =
+                "Saving...";
+
+
+            try {
+
+                const name =
+                    document
+                        .getElementById(
+                            "name"
+                        )
+                        .value
+                        .trim();
+
+
+                const brand =
+                    document
+                        .getElementById(
+                            "brand"
+                        )
+                        .value;
+
+
+                const size =
+                    document
+                        .getElementById(
+                            "size"
+                        )
+                        .value;
+
+
+                const gender =
+                    document
+                        .getElementById(
+                            "gender"
+                        )
+                        .value;
+
+
+                const category =
+                    document
+                        .getElementById(
+                            "category"
+                        )
+                        .value;
+
+
+                const colour =
+                    document
+                        .getElementById(
+                            "colour"
+                        )
+                        .value;
+
+
+                const description =
+                    document
+                        .getElementById(
+                            "description"
+                        )
+                        .value
+                        .trim();
+
+
+                const price =
+                    Number(
+                        document
+                            .getElementById(
+                                "price"
+                            )
+                            .value
+                    );
+
+
+                const stock =
+                    Math.max(
+                        0,
+                        parseInt(
+                            document
+                                .getElementById(
+                                    "stock"
+                                )
+                                .value
+                        ) || 0
+                    );
+
+
+                const isPublic =
+                    document
+                        .getElementById(
+                            "isPublic"
+                        )
+                        .value === "true";
+
+
+                const sizeStock =
+                    getSizeStock();
+
+
+                let uploadedImages =
+                    [];
+
+
+                /* =========================
+                   UPLOAD IMAGES
+                ========================= */
+
+                if (
+                    selectedFiles.length > 0
+                ) {
+
+                    uploadStatus.textContent =
+                        "Preparing "
+                        + selectedFiles.length
+                        + " image"
+                        + (
+                            selectedFiles.length === 1
+                                ? ""
+                                : "s"
+                        )
+                        + "...";
+
+
+                    uploadedImages =
+                        await Promise.all(
+                            selectedFiles.map(
+                                async file => {
+
+                                    uploadStatus.textContent =
+                                        "Uploading "
+                                        + selectedFiles.length
+                                        + " image"
+                                        + (
+                                            selectedFiles.length === 1
+                                                ? ""
+                                                : "s"
+                                        )
+                                        + "...";
+
+
+                                    return await uploadImage(
+                                        file
+                                    );
+
+                                }
+                            )
+                        );
+
+
+                    uploadStatus.textContent =
+                        "Images uploaded.";
+
+                }
+
+
+                /* =========================
+                   ALL IMAGES
+                ========================= */
+
+                let allImages = [];
+
+
+                if (
+                    editingProductId
+                ) {
+
+                    allImages = [
+                        ...existingImages,
+                        ...uploadedImages
+                    ];
+
+                }
+                else {
+
+                    allImages =
+                        uploadedImages;
+
+                }
+
+
+                const mainImage =
+                    allImages.length > 0
+                        ? allImages[0]
+                        : null;
+
+
+                /* =========================
+                   PRODUCT DATA
+                ========================= */
+
+                const productData = {
+
+                    name,
+
+                    brand:
+                        brand || null,
+
+                    size:
+                        size || null,
+
+                    gender:
+                        gender || null,
+
+                    category:
+                        category || null,
+
+                    colour:
+                        colour || null,
+
+                    description:
+                        description || null,
+
+                    price,
+
+                    stock,
+
+                    size_stock:
+                        sizeStock,
+
+                    image_url:
+                        mainImage,
+
+                    image_urls:
+                        allImages,
+
+                    is_public:
+                        isPublic
+
+                };
+
+
+                message.textContent =
+                    "Saving product data...";
+
+
+                let error;
+
+
+                /* =========================
+                   UPDATE
+                ========================= */
+
+                if (
+                    editingProductId
+                ) {
+
+                    const response =
+                        await supabaseClient
+                            .from(
+                                "Products"
+                            )
+                            .update(
+                                productData
+                            )
+                            .eq(
+                                "id",
+                                editingProductId
+                            );
+
+
+                    error =
+                        response.error;
+
+                }
+
+
+                /* =========================
+                   INSERT
+                ========================= */
+
+                else {
+
+                    const response =
+                        await supabaseClient
+                            .from(
+                                "Products"
+                            )
+                            .insert(
+                                productData
+                            );
+
+
+                    error =
+                        response.error;
+
+                }
+
+
+                if (
+                    error
+                ) {
+
+                    throw error;
+
+                }
+
+
+                message.textContent =
+                    editingProductId
+                        ? "Product updated successfully!"
+                        : "Product added successfully!";
+
+
+                resetForm();
+
+
+                await loadProducts();
+
+            }
+            catch (
+                error
+            ) {
+
+                console.error(
+                    "Save error:",
+                    error
+                );
+
+
+                message.textContent =
+                    "Error: "
+                    + (
+                        error.message ||
+                        "Could not save product."
+                    );
+
+            }
+            finally {
+
+                submitButton.disabled =
+                    false;
+
+            }
+
+        }
+    );
+
+
+/* =========================================================
+   LOAD PRODUCTS
+========================================================= */
+
+async function loadProducts() {
+
+    const grid =
+        document.getElementById(
+            "productGrid"
+        );
+
+
+    grid.innerHTML =
+        "Loading products...";
+
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient
+            .from(
+                "Products"
+            )
+            .select("*")
+            .order(
+                "created_at",
+                {
+                    ascending: false
+                }
+            );
+
+
+    if (
+        error
+    ) {
+
+        grid.innerHTML =
+            "Error loading products.";
+
+
+        console.error(
+            "Product loading error:",
+            error
+        );
+
+
+        return;
+
+    }
+
+
+    grid.innerHTML =
+        "";
+
+
+    if (
+        data.length === 0
+    ) {
+
+        grid.innerHTML =
+            "No products yet.";
+
+
+        return;
+
+    }
+
+
+    data.forEach(
+        product => {
+
+            const card =
+                document.createElement(
+                    "div"
+                );
+
+
+            card.className =
+                "product-card";
+
+
+            /* =========================
+               IMAGES
+            ========================= */
+
+            const images =
+                Array.isArray(
+                    product.image_urls
+                )
+                    ? product.image_urls
+                    : product.image_url
+                        ? [
+                            product.image_url
+                        ]
+                        : [];
+
+
+            if (
+                images.length > 0
+            ) {
+
+                const image =
+                    document.createElement(
+                        "img"
+                    );
+
+
+                image.src =
+                    images[0];
+
+
+                image.alt =
+                    product.name;
+
+
+                image.loading =
+                    "lazy";
+
+
+                card.appendChild(
+                    image
+                );
+
+            }
+
+
+            /* =========================
+               NAME
+            ========================= */
+
+            const title =
+                document.createElement(
+                    "h3"
+                );
+
+
+            title.textContent =
+                product.name;
+
+
+            card.appendChild(
+                title
+            );
+
+
+            /* =========================
+               PRICE
+            ========================= */
+
+            const price =
+                document.createElement(
+                    "p"
+                );
+
+
+            price.textContent =
+                "₹"
+                + Number(
+                    product.price || 0
+                ).toLocaleString(
+                    "en-IN",
+                    {
+                        maximumFractionDigits:
+                            2
+                    }
+                );
+
+
+            card.appendChild(
+                price
+            );
+
+
+            /* =========================
+               BRAND
+            ========================= */
+
+            if (
+                product.brand
+            ) {
+
+                const p =
+                    document.createElement(
+                        "p"
+                    );
+
+
+                p.textContent =
+                    "Brand: "
+                    + product.brand;
+
+
+                card.appendChild(
+                    p
+                );
+
+            }
+
+
+            /* =========================
+               CATEGORY
+            ========================= */
+
+            if (
+                product.category
+            ) {
+
+                const p =
+                    document.createElement(
+                        "p"
+                    );
+
+
+                p.textContent =
+                    "Category: "
+                    + product.category;
+
+
+                card.appendChild(
+                    p
+                );
+
+            }
+
+
+            /* =========================
+               SIZE STOCK
+            ========================= */
+
+            const sizeStock =
+                product.size_stock || {};
+
+
+            if (
+                Object.keys(
+                    sizeStock
+                ).length > 0
+            ) {
+
+                const p =
+                    document.createElement(
+                        "p"
+                    );
+
+
+                p.textContent =
+                    "Sizes: "
+                    + Object.entries(
+                        sizeStock
+                    )
+                    .map(
+                        (
+                            [
+                                size,
+                                stock
+                            ]
+                        ) =>
+                            size
+                            + " ("
+                            + stock
+                            + ")"
+                    )
+                    .join(
+                        ", "
+                    );
+
+
+                card.appendChild(
+                    p
+                );
+
+            }
+            else {
+
+                const p =
+                    document.createElement(
+                        "p"
+                    );
+
+
+                p.textContent =
+                    "Stock: "
+                    + (
+                        product.stock || 0
+                    );
+
+
+                card.appendChild(
+                    p
+                );
+
+            }
+
+
+            /* =========================
+               VISIBILITY
+            ========================= */
+
+            const visibility =
+                document.createElement(
+                    "p"
+                );
+
+
+            visibility.textContent =
+                product.is_public
+                    ? "Public"
+                    : "Hidden";
+
+
+            card.appendChild(
+                visibility
+            );
+
+
+            /* =========================
+               IMAGE COUNT
+            ========================= */
+
+            if (
+                images.length > 1
+            ) {
+
+                const count =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                count.className =
+                    "image-count";
+
+
+                count.textContent =
+                    images.length
+                    + " images";
+
+
+                card.appendChild(
+                    count
+                );
+
+            }
+
+
+            /* =========================
+               BUTTONS
+            ========================= */
+
+            const buttons =
+                document.createElement(
+                    "div"
+                );
+
+
+            buttons.className =
+                "card-buttons";
+
+
+            /* EDIT */
+
+            const edit =
+                document.createElement(
+                    "button"
+                );
+
+
+            edit.className =
+                "edit-button";
+
+
+            edit.textContent =
+                "Edit";
+
+
+            edit.type =
+                "button";
+
+
+            edit.addEventListener(
+                "click",
+                () =>
+                    editProduct(
+                        product
+                    )
+            );
+
+
+            /* DELETE */
+
+            const del =
+                document.createElement(
+                    "button"
+                );
+
+
+            del.className =
+                "delete-button";
+
+
+            del.textContent =
+                "Delete";
+
+
+            del.type =
+                "button";
+
+
+            del.addEventListener(
+                "click",
+                () =>
+                    deleteProduct(
+                        product.id
+                    )
+            );
+
+
+            buttons.appendChild(
+                edit
+            );
+
+
+            buttons.appendChild(
+                del
+            );
+
+
+            card.appendChild(
+                buttons
+            );
+
+
+            grid.appendChild(
+                card
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   EDIT PRODUCT
+========================================================= */
+
+function editProduct(
+    product
+) {
+
+    editingProductId =
+        product.id;
+
+
+    existingImages =
+        Array.isArray(
+            product.image_urls
+        )
+            ? [
+                ...product.image_urls
+            ]
+            : product.image_url
+                ? [
+                    product.image_url
+                ]
+                : [];
+
+
+    selectedFiles =
+        [];
+
+
+    document
+        .getElementById(
+            "formTitle"
+        )
+        .textContent =
+        "Edit Product";
+
+
+    document
+        .getElementById(
+            "submitButton"
+        )
+        .textContent =
+        "Update Product";
+
+
+    document
+        .getElementById(
+            "cancelButton"
+        )
+        .style.display =
+        "inline-block";
+
+
+    document
+        .getElementById(
+            "name"
+        )
+        .value =
+        product.name || "";
+
+
+    document
+        .getElementById(
+            "brand"
+        )
+        .value =
+        product.brand || "";
+
+
+    document
+        .getElementById(
+            "size"
+        )
+        .value =
+        product.size || "";
+
+
+    document
+        .getElementById(
+            "gender"
+        )
+        .value =
+        product.gender || "";
+
+
+    document
+        .getElementById(
+            "category"
+        )
+        .value =
+        product.category || "";
+
+
+    document
+        .getElementById(
+            "colour"
+        )
+        .value =
+        product.colour || "";
+
+
+    document
+        .getElementById(
+            "description"
+        )
+        .value =
+        product.description || "";
+
+
+    document
+        .getElementById(
+            "price"
+        )
+        .value =
+        product.price || "";
+
+
+    document
+        .getElementById(
+            "stock"
+        )
+        .value =
+        product.stock || 0;
+
+
+    document
+        .getElementById(
+            "isPublic"
+        )
+        .value =
+        product.is_public
+            ? "true"
+            : "false";
+
+
+    document
+        .getElementById(
+            "imageFiles"
+        )
+        .value =
+        "";
+
+
+    document
+        .getElementById(
+            "uploadStatus"
+        )
+        .textContent =
+        existingImages.length > 0
+            ? existingImages.length
+              + " existing image"
+              + (
+                    existingImages.length === 1
+                        ? ""
+                        : "s"
+                )
+              + " loaded. Select new images only if you want to add more."
+            : "No existing images.";
+
+
+    renderSizeStockInputs(
+        product.size_stock || {}
+    );
+
+
+    const preview =
+        document.getElementById(
+            "previewContainer"
+        );
+
+
+    preview.innerHTML =
+        "";
+
+
+    existingImages.forEach(
+        (
+            url,
+            index
+        ) => {
+
+            const wrapper =
+                document.createElement(
+                    "div"
+                );
+
+
+            wrapper.className =
+                "preview-wrapper";
+
+
+            const image =
+                document.createElement(
+                    "img"
+                );
+
+
+            image.src =
+                url;
+
+
+            image.alt =
+                "Existing product image "
+                + (
+                    index + 1
+                );
+
+
+            wrapper.appendChild(
+                image
+            );
+
+
+            const label =
+                document.createElement(
+                    "div"
+                );
+
+
+            label.className =
+                "preview-label";
+
+
+            label.textContent =
+                "Existing "
+                + (
+                    index + 1
+                );
+
+
+            wrapper.appendChild(
+                label
+            );
+
+
+            preview.appendChild(
+                wrapper
+            );
+
+        }
+    );
+
+
+    window.scrollTo(
+        {
+            top: 0,
+            behavior: "smooth"
+        }
+    );
+
+}
+
+
+/* =========================================================
+   DELETE PRODUCT
+========================================================= */
+
+async function deleteProduct(
+    id
+) {
+
+    if (
+        !confirm(
+            "Delete this product?"
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    const {
+        error
+    } =
+        await supabaseClient
+            .from(
+                "Products"
+            )
+            .delete()
+            .eq(
+                "id",
+                id
+            );
+
+
+    if (
+        error
+    ) {
+
+        alert(
+            "Error: "
+            + error.message
+        );
+
+
+        return;
+
+    }
+
+
+    await loadProducts();
+
+}
+
+
+/* =========================================================
+   CANCEL EDIT
+========================================================= */
+
+document
+    .getElementById(
+        "cancelButton"
+    )
+    .addEventListener(
+        "click",
+        resetForm
+    );
+
+
+/* =========================================================
+   RESET FORM
+========================================================= */
+
+function resetForm() {
+
+    editingProductId =
+        null;
+
+
+    existingImages =
+        [];
+
+
+    selectedFiles =
+        [];
+
+
+    document
+        .getElementById(
+            "productForm"
+        )
+        .reset();
+
+
+    document
+        .getElementById(
+            "imageFiles"
+        )
+        .value =
+        "";
+
+
+    document
+        .getElementById(
+            "formTitle"
+        )
+        .textContent =
+        "Add New Product";
+
+
+    document
+        .getElementById(
+            "submitButton"
+        )
+        .textContent =
+        "Add Product";
+
+
+    document
+        .getElementById(
+            "cancelButton"
+        )
+        .style.display =
+        "none";
+
+
+    document
+        .getElementById(
+            "previewContainer"
+        )
+        .innerHTML =
+        "";
+
+
+    document
+        .getElementById(
+            "uploadStatus"
+        )
+        .textContent =
+        "";
+
+
+    document
+        .getElementById(
+            "message"
+        )
+        .textContent =
+        "";
+
+
+    renderSizeStockInputs();
+
+}
+
+
+/* =========================================================
+   START ADMIN
+========================================================= */
+
+async function startAdmin() {
+
+    /*
+        IMPORTANT:
+
+        Do not load products/settings until
+        the admin has been authenticated.
+    */
+
+    const allowed =
+        await checkLogin();
+
+
+    if (
+        !allowed
+    ) {
+
+        return;
+
+    }
+
+
+    await Promise.all(
+        [
+            loadDropdowns(),
+            loadProducts()
+        ]
+    );
+
+}
+
+
+/* =========================================================
+   START
+========================================================= */
+
+startAdmin();
+
+</script>
+
+
+</body>
+
+</html>
